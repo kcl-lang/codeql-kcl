@@ -323,16 +323,16 @@ case @unaryop.kind of
 
 case @cmpop.kind of
   0 = @Eq
-| 0 = @NotEq
-| 0 = @Lt
-| 0 = @LtE
-| 0 = @Gt
-| 0 = @GtE
-| 0 = @Is
-| 0 = @In
-| 0 = @NotIn
-| 0 = @Not
-| 0 = @IsNot;
+| 1 = @NotEq
+| 2 = @Lt
+| 3 = @LtE
+| 4 = @Gt
+| 5 = @GtE
+| 6 = @Is
+| 7 = @In
+| 8 = @NotIn
+| 9 = @Not
+| 10 = @IsNot;
 
 /** Comments */
 
