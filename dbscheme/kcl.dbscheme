@@ -1,353 +1,449 @@
+/*
+* External artifacts
+*/
 
-/** Duplicate code **/
+externalDefects(
+  unique int id : @externalDefect,
+  varchar(900) queryPath : string ref,
+  int location : @location ref,
+  varchar(900) message : string ref,
+  float severity : float ref
+);
+
+externalMetrics(
+  unique int id : @externalMetric,
+  varchar(900) queryPath : string ref,
+  int location : @location ref,
+  float value : float ref
+);
+
+externalData(
+  int id : @externalDataElement,
+  varchar(900) queryPath : string ref,
+  int column: int ref,
+  varchar(900) data : string ref
+);
+
+snapshotDate(unique date snapshotDate : date ref);
+
+sourceLocationPrefix(varchar(900) prefix : string ref);
+
+/*
+ * Duplicate code
+ */
 
 duplicateCode(
-    unique int id : @duplication,
-    varchar(900) relativePath : string ref,
-    int equivClass : int ref);
-  
-  similarCode(
-    unique int id : @similarity,
-    varchar(900) relativePath : string ref,
-    int equivClass : int ref);
-  
-  @duplication_or_similarity = @duplication | @similarity;
-  
-  tokens(
-    int id : @duplication_or_similarity ref,
-    int offset : int ref,
-    int beginLine : int ref,
-    int beginColumn : int ref,
-    int endLine : int ref,
-    int endColumn : int ref);
-  
-  /** External data **/
-  
-  externalData(
-    int id : @externalDataElement,
-    varchar(900) path : string ref,
-    int column: int ref,
-    varchar(900) value : string ref
-  );
-  
-  snapshotDate(unique date snapshotDate : date ref);
-  
-  sourceLocationPrefix(varchar(900) prefix : string ref);
+  unique int id : @duplication,
+  varchar(900) relativePath : string ref,
+  int equivClass : int ref);
 
-  diagnostics(unique int id: @diagnostic, int severity: int ref, string error_tag: string ref, string error_message: string ref,
-              string full_error_message: string ref, int location: @location ref);
-  
-  locations_default(unique int id: @location_default, int file: @file ref, int beginLine: int ref, int beginColumn: int ref,
-                    int endLine: int ref, int endColumn: int ref);
-  
-  numlines(int element_id: @sourceline ref, int num_lines: int ref, int num_code: int ref, int num_comment: int ref);
-  
-  files(unique int id: @file, string name: string ref);
-  
-  folders(unique int id: @folder, string name: string ref);
-  
-  containerparent(int parent: @container ref, unique int child: @container ref);
-  
-  has_location(unique int locatable: @locatable ref, int location: @location ref);
-  
-  #keyset[parent, idx]
-  comment_groups(unique int id: @comment_group, int parent: @file ref, int idx: int ref);
-  
-  comments(unique int id: @comment, int kind: int ref, int parent: @comment_group ref, int idx: int ref, string text: string ref);
-  
-  doc_comments(unique int node: @documentable ref, int comment: @comment_group ref);
+similarCode(
+  unique int id : @similarity,
+  varchar(900) relativePath : string ref,
+  int equivClass : int ref);
 
-  literals(unique int expr: @expr ref, string value: string ref, string raw: string ref);
-  
-  constvalues(unique int expr: @expr ref, string value: string ref, string exact: string ref);
-  
-  fields(unique int id: @field, int parent: @fieldparent ref, int idx: int ref);
-  
-  #keyset[parent, idx]
-  stmts(unique int id: @stmt, int kind: int ref, int parent: @stmtparent ref, int idx: int ref);
-  
-  #keyset[parent, idx]
-  decls(unique int id: @decl, int kind: int ref, int parent: @declparent ref, int idx: int ref);
-  
-  #keyset[parent, idx]
-  specs(unique int id: @spec, int kind: int ref, int parent: @gendecl ref, int idx: int ref);
-  
-  scopes(unique int id: @scope, int kind: int ref);
-  
-  scopenesting(unique int inner: @scope ref, int outer: @scope ref);
-  
-  scopenodes(unique int node: @scopenode ref, int scope: @localscope ref);
-  
-  objects(unique int id: @object, int kind: int ref, string name: string ref);
-  
-  objectscopes(unique int object: @object ref, int scope: @scope ref);
-  
-  objecttypes(unique int object: @object ref, int tp: @type ref);
-  
-  methodreceivers(unique int method: @object ref, int receiver: @object ref);
-  
-  fieldstructs(unique int field: @object ref, int struct: @structtype ref);
-  
-  methodhosts(int method: @object ref, int host: @namedtype ref);
-  
-  defs(int ident: @ident ref, int object: @object ref);
-  
-  uses(int ident: @ident ref, int object: @object ref);
-  
-  types(unique int id: @type, int kind: int ref);
-  
-  type_of(unique int expr: @expr ref, int tp: @type ref);
-  
-  typename(unique int tp: @type ref, string name: string ref);
-  
-  key_type(unique int map: @maptype ref, int tp: @type ref);
-  
-  element_type(unique int container: @containertype ref, int tp: @type ref);
-  
-  base_type(unique int ptr: @pointertype ref, int tp: @type ref);
-  
-  underlying_type(unique int named: @namedtype ref, int tp: @type ref);
-  
-  #keyset[parent, index]
-  component_types(int parent: @compositetype ref, int index: int ref, string name: string ref, int tp: @type ref);
-  
-  array_length(unique int tp: @arraytype ref, string len: string ref);
-  
-  type_objects(unique int tp: @type ref, int object: @object ref);
-  
-  packages(unique int id: @package, string name: string ref, string path: string ref, int scope: @packagescope ref);
-  
-  #keyset[parent, idx]
-  modexprs(unique int id: @modexpr, int kind: int ref, int parent: @modexprparent ref, int idx: int ref);
-  
-  #keyset[parent, idx]
-  modtokens(string token: string ref, int parent: @modexpr ref, int idx: int ref);
-  
-  #keyset[package, idx]
-  errors(unique int id: @error, int kind: int ref, string msg: string ref, string rawpos: string ref,
-         string file: string ref, int line: int ref, int col: int ref, int package: @package ref, int idx: int ref);
-  
-  has_ellipsis(int id: @callorconversionexpr ref);
-  
-  variadic(int id: @signaturetype ref);
-  
-  @container = @file | @folder;
-  
-  @locatable = @node | @localscope;
-  
-  @node = @documentable | @exprparent | @modexprparent | @fieldparent | @stmtparent | @declparent | @scopenode
-        | @comment_group | @comment;
-  
-  @documentable = @file | @field | @spec | @gendecl | @funcdecl | @modexpr;
-  
-  @exprparent = @funcdef | @file | @expr | @field | @stmt | @decl | @spec;
-  
-  @modexprparent = @file | @modexpr;
-  
-  @fieldparent = @decl | @structtypeexpr | @functypeexpr | @interfacetypeexpr;
-  
-  @stmtparent = @funcdef | @stmt | @decl;
-  
-  @declparent = @file | @declstmt;
-  
-  @funcdef = @funclit | @funcdecl;
-  
-  @scopenode = @file | @functypeexpr | @blockstmt | @ifstmt | @caseclause | @switchstmt | @commclause | @loopstmt;
-  
-  @location = @location_default;
-  
-  @sourceline = @locatable;
-  
-  /** Statements */
+@duplication_or_similarity = @duplication | @similarity
 
-  case @stmt.kind of
-    0 = @badstmt
-  | 1 = @declstmt
-  | 2 = @emptystmt
-  | 3 = @labeledstmt
-  | 4 = @exprstmt
-  | 5 = @sendstmt
-  | 6 = @incstmt
-  | 7 = @decstmt
-  | 8 = @gostmt
-  | 9 = @deferstmt
-  | 10 = @returnstmt
-  | 11 = @breakstmt
-  | 12 = @continuestmt
-  | 13 = @gotostmt
-  | 14 = @fallthroughstmt
-  | 15 = @blockstmt
-  | 16 = @ifstmt
-  | 17 = @caseclause
-  | 18 = @exprswitchstmt
-  | 19 = @typeswitchstmt
-  | 20 = @commclause
-  | 21 = @selectstmt
-  | 22 = @forstmt
-  | 23 = @rangestmt
-  | 24 = @assignstmt
-  | 25 = @definestmt
-  | 26 = @addassignstmt
-  | 27 = @subassignstmt
-  | 28 = @mulassignstmt
-  | 29 = @quoassignstmt
-  | 30 = @remassignstmt
-  | 31 = @andassignstmt
-  | 32 = @orassignstmt
-  | 33 = @xorassignstmt
-  | 34 = @shlassignstmt
-  | 35 = @shrassignstmt
-  | 36 = @andnotassignstmt;
+tokens(
+  int id : @duplication_or_similarity ref,
+  int offset : int ref,
+  int beginLine : int ref,
+  int beginColumn : int ref,
+  int endLine : int ref,
+  int endColumn : int ref);
+  
+/****************************
+        KCL dbscheme
+****************************/
 
-  /** Expressions */
+/** Locations */
 
-  case @expr.kind of
+files(unique int id: @file, string name: string ref);
+  
+folders(unique int id: @folder, string name: string ref);
+
+@container = @folder | @file;
+
+containerparent(int parent: @container ref,
+  unique int child: @container ref);
+
+@sourceline = @file | @Module | @xmllocatable;
+
+numlines(int element_id: @sourceline ref,
+  int num_lines: int ref,
+  int num_code: int ref,
+  int num_comment: int ref
+);
+
+@location = @location_default;
+
+locations_default(unique int id: @location_default,
+  int file: @file ref,
+  int beginLine: int ref,
+  int beginColumn: int ref,
+  int endLine: int ref,
+  int endColumn: int ref);
+
+file_contents(unique int file: @file ref, string contents: string ref);
+
+module_path(int module: @Module ref, int file: @file ref);
+
+variable(unique int id : @variable,
+  int scope : @py_scope ref,
+  varchar(1) name : string ref);
+
+line_lengths(unique int id : @line,
+  int file: @Module ref,
+  int line : int ref,
+  int length : int ref);
+
+/** Grammar */
+
+modules(unique int id : @Module);
+
+schemas(unique int id : @Schema,
+  unique int parent : @SchemaExpr ref);
+
+functions(unique int id : @Lambda,
+  unique int parent : @function_parent ref);
+
+imports(unique int id : @import,
+  int parent : @import_list ref,
+  int idx : int ref);
+
+import_lists(unique int id : @import_list,
+  unique int parent : @Import ref);
+
+arguments(unique int id : @arguments,
+  unique int parent : @arguments_parent ref);
+
+parameter_lists(unique int id : @parameter_list,
+  unique int parent : @parameter_list_parent ref);
+
+exprs(unique int id : @expr,
+  int kind: int ref,
+  int parent : @expr_parent ref,
+  int idx : int ref);
+
+expr_contexts(unique int id : @expr_context,
+  int kind: int ref,
+  unique int parent : @expr_context_parent ref);
+
+expr_lists(unique int id : @expr_list,
+  int parent : @expr_list_parent ref,
+  int idx : int ref);
+
+stmts(unique int id : @stmt,
+  int kind: int ref,
+  int parent : @stmt_list ref,
+  int idx : int ref);
+
+stmt_lists(unique int id : @stmt_list,
+  int parent : @stmt_list_parent ref,
+  int idx : int ref);
+
+numbers(varchar(1) id : string ref,
+  int parent : @NumberLit ref,
+  int idx : int ref);
+
+strs(varchar(1) id : string ref,
+  int parent : @StringLit ref,
+  int idx : int ref);
+
+binaryops(unique int id : @binaryop,
+  int kind: int ref,
+  unique int parent : @Binary ref);
+
+unaryops(unique int id : @unaryop,
+  int kind: int ref,
+  unique int parent : @Unary ref);
+
+cmpops(unique int id : @cmpop,
+  int kind: int ref,
+  int parent : @cmpop_list ref,
+  int idx : int ref);
+
+cmpop_lists(unique int id : @cmpop_list,
+    unique int parent : @Compare ref);
+
+comprehensions(unique int id : @comprehension,
+  int parent : @comprehension_list ref,
+  int idx : int ref);
+  
+comprehension_lists(unique int id : @comprehension_list,
+  unique int parent : @ListComp ref);
+
+config_items(unique int id : @config_item,
+  int kind: int ref,
+  int parent : @config_item_list ref,
+  int idx : int ref);
+
+config_item_lists(unique int id : @config_item_list,
+  unique int parent : @config_item_list_parent ref);
+
+variable(unique int id : @variable,
+  int scope : @scope ref,
+  varchar(1) name : string ref);
+
+variables(int id : @variable ref,
+  unique int parent : @Identifier ref);
+
+/** Statements */
+
+case @stmt.kind of
+  0 = @TypeAlias
+| 1 = @Expr
+| 2 = @Unification
+| 3 = @Assign
+| 4 = @AugAssign
+| 5 = @Assert
+| 6 = @If
+| 7 = @Import
+| 8 = @Schemaattr
+| 9 = @Schema
+| 10 = @Rule;
+
+/** Expressions */
+
+case @expr.kind of
     0 = @missingexpr
-  | 1 = @identexpr
-  | 2 = @unaryexpr
-  | 3 = @intlit
-  | 4 = @floatlit
-  | 5 = @imaglit
-  | 6 = @charlit
-  | 7 = @stringlit
-  | 8 = @funclit
-  | 9 = @compositelit
-  | 10 = @parenexpr
-  | 11 = @selectorexpr
-  | 12 = @indexexpr
-  | 13 = @sliceexpr
-  | 14 = @typeassertexpr
-  | 15 = @callorconversionexpr
-  | 16 = @starexpr
-  | 17 = @keyvalueexpr
-  | 18 = @arraytypeexpr
-  | 19 = @structtypeexpr
-  | 20 = @functypeexpr
-  | 21 = @interfacetypeexpr
-  | 22 = @maptypeexpr
-  | 23 = @plusexpr
-  | 24 = @minusexpr
-  | 25 = @notexpr
-  | 26 = @complementexpr
-  | 27 = @derefexpr
-  | 28 = @addressexpr
-  | 29 = @arrowexpr
-  | 30 = @lorexpr
-  | 31 = @landexpr
-  | 32 = @eqlexpr
-  | 33 = @neqexpr
-  | 34 = @lssexpr
-  | 35 = @leqexpr
-  | 36 = @gtrexpr
-  | 37 = @geqexpr
-  | 38 = @addexpr
-  | 39 = @subexpr
-  | 40 = @orexpr
-  | 41 = @xorexpr
-  | 42 = @mulexpr
-  | 43 = @quoexpr
-  | 44 = @remexpr
-  | 45 = @shlexpr
-  | 46 = @shrexpr
-  | 47 = @andexpr
-  | 48 = @andnotexpr
-  | 49 = @errorexpr;
+| 1 = @Identifier
+| 2 = @Unary
+| 3 = @Binary
+| 4 = @If
+| 5 = @Selector
+| 6 = @Call
+| 7 = @Paren
+| 8 = @Quant
+| 9 = @List
+| 10 = @ListIfItem
+| 11 = @ListComp
+| 12 = @Starred
+| 13 = @DictComp
+| 14 = @Compclause
+| 15 = @Schema
+| 16 = @Config
+| 17 = @Check
+| 18 = @Lambda
+| 19 = @Subscript
+| 20 = @Keyword
+| 21 = @Arguments
+| 22 = @Compare
+| 23 = @NumberLit
+| 24 = @StringLit
+| 25 = @NameConstantLit
+| 26 = @JoinedString
+| 27 = @FormmattedValue
+| 28 = @ConfigIfEntry
+| 29 = @Missing;
 
-  /** Scopes */
+case @numberbinarysuffix.kind
+| 0 = @n
+| 1 = @u
+| 2 = @m
+| 3 = @k
+| 4 = @K
+| 5 = @M
+| 6 = @G
+| 7 = @T
+| 8 = @P
+| 9 = @Ki
+| 10 = @Mi
+| 11 = @Gi
+| 12 = @Ti
+| 13 = @Pi;
 
-  case @scope.kind of
-    0 = @universescope
-  | 1 = @rootcope
-  | 2 = @localscope;
-  
-  /** Types */
+case @nameconstant.kind
+  0 = @True
+| 1 = @False
+| 2 = @None
+| 3 = @Undefined;
 
-  case @type.kind of
-    0 = @anytype
-  | 1 = @namedtype
-  | 2 = @booltype
-  | 3 = @inttype
-  | 4 = @floattype
-  | 5 = @strtype
-  | 6 = @listtype
-  | 7 = @dicttype
-  | 8 = @uniontype
-  | 9 = @boolliteraltype
-  | 10 = @intliteraltype
-  | 11 = @floatliteraltype
-  | 12 = @strliteraltype
-  | 13 = @functiontype;
-  
-  @basictype = @booltype | @inttype | @floattype | @strtype;
+case @exprcontext.kind
+  0 = @Load
+| 1 = @Store;
 
-  @literaltype = @boolliteraltype | @intliteraltype | @floatliteraltype | @strliteraltype;
+case @quantoperation.kind
+  0 = @All
+| 1 = @Any
+| 2 = @Filter
+| 3 = @Map;
 
-  /** Comments */
+case @configentryoperation.kind
+  0 = @Union
+| 1 = @Override
+| 2 = @Insert;
 
-  case @comment.kind of
-    0 = @linecomment;
+case @literal.kind of
+  0 = @Number
+| 1 = @String
+| 2 = @NameConstant;
 
-  /** Errors */
+case @numberlitvalue.kind of
+  0 = @Int
+| 1 = @Float;
 
-  case @error.kind of
-    0 = @unknownerror
-  | 1 = @bootstraperror
-  | 2 = @parseerror
-  | 3 = @typeerror
-  | 4 = @evaluationerror;
+case @binop.kind of
+  0 = @Add
+| 1 = @Sub
+| 2 = @Mul
+| 3 = @Div
+| 4 = @Mod
+| 5 = @Pow
+| 6 = @FloorDiv
+| 7 = @LShift
+| 8 = @RShift
+| 9 = @BitXor
+| 10 = @BitAnd
+| 11 = @BitOr
+| 12 = @And
+| 13 = @Or
+| 14 = @As;
 
-  /** Tokens */
+case @augop.kind of
+  0 = @Assign
+| 1 = @Add
+| 2 = @Sub
+| 3 = @Mul
+| 4 = @Div
+| 5 = @Mod
+| 6 = @Pow
+| 7 = @FloorDiv
+| 8 = @LShift
+| 9 = @RShift
+| 10 = @BitXor
+| 11 = @BitAnd
+| 12 = @BitOr;
 
-  /** Locations */
+case @unaryop.kind of
+  0 = @UAdd
+| 1 = @USub
+| 2 = @Invert
+| 3 = @Not;
 
-  /* XML Files */
-  
-  xmlEncoding  (unique int id: @file ref, varchar(900) encoding: string ref);
-  
-  xmlDTDs       (unique int id: @xmldtd,
-                varchar(900) root: string ref,
-                varchar(900) publicId: string ref,
-                varchar(900) systemId: string ref,
-                int fileid: @file ref);
-  
-  xmlElements   (unique int id: @xmlelement,
-                varchar(900) name: string ref,
-                int parentid: @xmlparent ref,
-                int idx: int ref,
-                int fileid: @file ref);
-  
-  xmlAttrs      (unique int id: @xmlattribute,
-                int elementid: @xmlelement ref,
-                varchar(900) name: string ref,
-                varchar(3600) value: string ref,
-                int idx: int ref,
-                int fileid: @file ref);
-  
-  xmlNs         (int id: @xmlnamespace,
-                varchar(900) prefixName: string ref,
-                varchar(900) URI: string ref,
-                int fileid: @file ref);
-  
-  xmlHasNs      (int elementId: @xmlnamespaceable ref,
-                int nsId: @xmlnamespace ref,
-                int fileid: @file ref);
-  
-  xmlComments   (unique int id: @xmlcomment,
-                varchar(3600) text: string ref,
-                int parentid: @xmlparent ref,
-                int fileid: @file ref);
-  
-  xmlChars      (unique int id: @xmlcharacters,
-                varchar(3600) text: string ref,
-                int parentid: @xmlparent ref,
-                int idx: int ref,
-                int isCDATA: int ref,
-                int fileid: @file ref);
-  
-  @xmlparent = @file | @xmlelement;
-  @xmlnamespaceable = @xmlelement | @xmlattribute;
-  
-  xmllocations(int xmlElement: @xmllocatable ref,
-               int location: @location_default ref);
-  
-  @xmllocatable = @xmlcharacters | @xmlelement | @xmlcomment | @xmlattribute | @xmldtd | @file | @xmlnamespace;
+case @cmpop.kind of
+  0 = @Eq
+| 0 = @NotEq
+| 0 = @Lt
+| 0 = @LtE
+| 0 = @Gt
+| 0 = @GtE
+| 0 = @Is
+| 0 = @In
+| 0 = @NotIn
+| 0 = @Not
+| 0 = @IsNot;
+
+/** Comments */
+
+
+/** Types */
+case @type.kind of
+  0 = @Any
+| 1 = @Named
+| 2 = @Bool
+| 3 = @Int
+| 4 = @Float
+| 5 = @Str
+| 6 = @List
+| 7 = @Dict
+| 8 = @Union
+| 9 = @BoolLit
+| 10 = @IntLit
+| 11 = @FloatLit
+| 12 = @StringLit
+| 13 = @Function;
+
+@basictype = @Bool | @Int | @Float | @Str;
+
+@literaltype = @boolliteraltype | @intliteraltype | @floatliteraltype | @strliteraltype;
+
+@stmt_list_parent = @Schema | @Rule | @SchemaAttr | @Import | @If | @Assert | @AugAssign | @Assign | @Unification;
+
+@expr_context_parent = @Identifier | @List | @Quant | @Selector | @Starred | @Subscript;
+
+@literal = @NumberLit | @StringLit | @NameConstantLit;
+
+@string_part_parent = @JoinedString | @FormmattedValue;
+
+@function_parent = @DictComp | @ListComp | @Lambda;
+
+@arguments_parent = @SchemaExpr | @Lambda;
+
+@comprehension = @ListComp | @DictComp;
+
+@parameter_list_parent = @Schema | @Lambda;
+
+@config_item_list_parent = @KeyValuePair | @ConfigIfEntry | @Starred;
+
+@expr_or_stmt = @expr | @stmt;
+
+/** Scopes */
+case @scope.kind of
+  0 = @Package
+| 1 = @Builtin
+| 2 = @Schema
+| 3 = @Loop
+| 4 = @CondStmt
+| 5 = @LambdaScope
+| 6 = @ConfigScope;
+
+/** Errors */
+
+case @error.kind of
+  0 = @unknownerror
+| 1 = @parseerror
+| 2 = @typeerror
+| 3 = @evaluationerror;
+/** Tokens */
+
+/* XML Files */
+xmlEncoding  (unique int id: @file ref, varchar(900) encoding: string ref);
+
+xmlDTDs       (unique int id: @xmldtd,
+              varchar(900) root: string ref,
+              varchar(900) publicId: string ref,
+              varchar(900) systemId: string ref,
+              int fileid: @file ref);
+
+xmlElements   (unique int id: @xmlelement,
+              varchar(900) name: string ref,
+              int parentid: @xmlparent ref,
+              int idx: int ref,
+              int fileid: @file ref);
+
+xmlAttrs      (unique int id: @xmlattribute,
+              int elementid: @xmlelement ref,
+              varchar(900) name: string ref,
+              varchar(3600) value: string ref,
+              int idx: int ref,
+              int fileid: @file ref);
+
+xmlNs         (int id: @xmlnamespace,
+              varchar(900) prefixName: string ref,
+              varchar(900) URI: string ref,
+              int fileid: @file ref);
+
+xmlHasNs      (int elementId: @xmlnamespaceable ref,
+              int nsId: @xmlnamespace ref,
+              int fileid: @file ref);
+
+xmlComments   (unique int id: @xmlcomment,
+              varchar(3600) text: string ref,
+              int parentid: @xmlparent ref,
+              int fileid: @file ref);
+
+xmlChars      (unique int id: @xmlcharacters,
+              varchar(3600) text: string ref,
+              int parentid: @xmlparent ref,
+              int idx: int ref,
+              int isCDATA: int ref,
+              int fileid: @file ref);
+
+@xmlparent = @file | @xmlelement;
+@xmlnamespaceable = @xmlelement | @xmlattribute;
+
+xmllocations(int xmlElement: @xmllocatable ref,
+             int location: @location_default ref);
+
+@xmllocatable = @xmlcharacters | @xmlelement | @xmlcomment | @xmlattribute | @xmldtd | @file | @xmlnamespace;
