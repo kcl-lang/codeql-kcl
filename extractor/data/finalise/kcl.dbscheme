@@ -1,0 +1,523 @@
+
+/*
+* External artifacts
+*/
+externalDefects(
+  unique int id : @externalDefect,
+  varchar(900) queryPath : string ref,
+  int location : @location ref,
+  varchar(900) message : string ref,
+  float severity : float ref
+);
+
+externalMetrics(
+  unique int id : @externalMetric,
+  varchar(900) queryPath : string ref,
+  int location : @location ref,
+  float value : float ref
+);
+
+externalData(
+    int id : @externalDataElement,
+    varchar(900) path : string ref,
+    int column: int ref,
+    varchar(900) value : string ref);
+
+snapshotDate(unique date snapshotDate : date ref);
+
+sourceLocationPrefix(varchar(900) prefix : string ref);
+
+/*
+ * Duplicate code
+ */
+duplicateCode(
+    unique int id : @duplication,
+    varchar(900) relativePath : string ref,
+    int equivClass : int ref);
+
+similarCode(
+    unique int id : @similarity,
+    varchar(900) relativePath : string ref,
+    int equivClass : int ref);
+
+@duplication_or_similarity = @duplication | @similarity;
+
+tokens(
+    int id : @duplication_or_similarity ref,
+    int offset : int ref,
+    int beginLine : int ref,
+    int beginColumn : int ref,
+    int endLine : int ref,
+    int endColumn : int ref);
+
+/****************************
+        KCL dbscheme
+****************************/
+
+/** Locations */
+
+files(unique int id: @file, string name: string ref);
+
+folders(unique int id: @folder, string name: string ref);
+
+@container = @folder | @file;
+
+containerparent(int parent: @container ref,
+  unique int child: @container ref);
+
+@sourceline = @file;
+
+numlines(int element_id: @sourceline ref,
+  int num_lines: int ref,
+  int num_code: int ref,
+  int num_comment: int ref);
+
+@location = @location_default;
+
+locations_default(unique int id: @location_default,
+  int file: @file ref,
+  int beginLine: int ref,
+  int beginColumn: int ref,
+  int endLine: int ref,
+  int endColumn: int ref);
+
+hasLocation (
+  int locatableid: @locatable ref,
+  int id: @location ref);
+
+@locatable = @file | @ast_node ;
+
+@ast_node = @comment | @stmt | @expr | @type | @identifier | @arguments | @keyword | @keyword |@schemaconfig | @configentry | @compclause | @schemaindexsignature;
+
+roots(unique int id : @root,
+    string path :string ref);
+
+packages(unique int id : @package,
+    string name :string ref,
+    int parent : @root ref);
+
+/** grammar */
+modules(unique int id: @module,
+    string name: string ref,
+    int file : @file ref,
+    int parent : @package ref,
+    int idx : int ref);
+
+// comments
+comments (unique int id: @comment,
+    int module: @module ref,
+    int idx:int ref,
+    varchar(900) text: string ref,
+    varchar(900) tostring: string ref);
+
+
+/** Scopes */
+scopes (unique int id: @scope,
+    int kind: int ref);
+
+case @scope.kind of
+0 = @root_scope
+| 1 = @package_scope
+| 2 = @modult_scope
+| 3 = @schema_scope
+| 4 = @loop_scope
+| 5 = @cond_scope
+| 6 = @lambda_scope
+| 7 = @config_scope;
+
+scopenodes (int node: @ast_node ref,
+    int scope: @scope ref);
+
+scopenesting (unique int inner: @scope ref,
+      int outer: @scope ref);
+
+/** Statements */
+stmts(unique int id : @stmt,
+    int kind: int ref,
+    int parent : @stmt_list ref,
+    int idx : int ref,
+    varchar(900) tostring: string ref);
+
+stmt_lists(unique int id : @stmt_list,
+    int parent : @stmt_list_parent ref,
+    int idx : int ref);
+
+case @stmt.kind of
+  0 = @typealias_stmt
+| 1 = @expr_stmt
+| 2 = @unification_stmt
+| 3 = @assign_stmt
+| 4 = @augassign_stmt
+| 5 = @assert_stmt
+| 6 = @if_stmt
+| 7 = @import_stmt
+| 8 = @schemaattr_stmt
+| 9 = @schema_stmt
+| 10 = @rule_stmt;
+
+@stmt_list_parent = @schema_stmt | @rule_stmt | @schemaattr_stmt | @import_stmt | @if_stmt | @assert_stmt | @augassign_stmt | @assign_stmt | @unification_stmt;
+
+/** Expressions */
+exprs(unique int id : @expr,
+    int kind: int ref,
+    int parent : @expr_parent ref,
+    int idx : int ref,
+    string tostring: string ref);
+
+expr_lists(unique int id : @expr_list,
+    int parent : @expr_parent ref,
+    int idx : int ref);
+
+case @expr.kind of
+0 = @identifier_expr
+| 1 = @unary_expr
+| 2 = @binary_expr
+| 3 = @if_expr
+| 4 = @selector_expr
+| 5 = @call_expr
+| 6 = @paren_expr
+| 7 = @quant_expr
+| 8 = @list_expr
+| 9 = @listifitem_expr
+| 10 = @listcomp_expr
+| 11 = @starred_expr
+| 12 = @dictcomp_expr
+| 13 = @compclause_expr
+| 14 = @schema_expr
+| 15 = @config_expr
+| 16 = @check_expr
+| 17 = @lambda_expr
+| 18 = @subscript_expr
+| 20 = @arguments_expr
+| 21 = @compare_expr
+| 22 = @numberlit_expr
+| 23 = @stringlit_expr
+| 24 = @nameconstantlit_expr
+| 25 = @joinedstring_expr
+| 26 = @formmattedvalue_expr
+| 27 = @configifentry_expr
+| 28 = @missing_expr;
+
+@expr_parent = @expr | @stmt | @expr_list;
+
+/** Strings */
+
+strings(unique int id : @str,
+    int parent : @str_parent ref,
+    int idx : int ref,
+    string value : string ref
+);
+
+@str_parent = @ast_node;
+
+/** Bools */
+bools(unique int id : @bool,
+    int parent : @ast_node ref,
+    int idx : int ref,
+    boolean value : boolean ref );
+
+/** Identifiers */
+identifiers(unique int id : @identifier,
+    int parent : @identifier_parent ref,
+    int idx : int ref,
+    string name : string ref);
+
+identifier_lists(unique int id : @identifier_list,
+    int parent : @identifier_list_parent ref,
+    int idx : int ref)
+
+@identifier_list_parent = @assign_stmt | @quant_expr | @rule_stmt | @schema_stmt | @arguments | @compclause;
+
+@identifier_parent = @schemaconfig | @augassign_stmt | @keyword | @rule_stmt | @schema_expr|@schema_stmt|@selector_expr|@typealias_stmt|@unification_stmt;
+
+/** arguments */
+arguments(unique int id : @arguments,
+    unique int parent : @arguments_parent ref,
+    int idx : int ref);
+
+@arguments_parent = @schema_expr | @lambda_expr | @rule_stmt;
+
+/** types */
+
+types(unique int id : @type,
+    int kind : int ref,
+    int value : @type_value ref,
+    int parent : @type_parent ref,
+    int idx : int ref,
+    string tostring : string ref
+);
+
+/** Types */
+case @type.kind of
+  0 = @any_type
+| 1 = @named_type
+| 2 = @bool_type
+| 3 = @int_type
+| 4 = @float_type
+| 5 = @str_type
+| 6 = @list_type
+| 7 = @dict_type
+| 8 = @union_type
+| 9 = @function_type;
+
+@type_value = @type_list | @type | @identifier | @literal | @str;
+
+@type_parent = @type_list | @type;
+
+typelists( unique int id : @type_list,
+    int parent : @type_list_parent ref,
+    int idx : int ref
+);
+
+@type_list_parent = @union_type | @typealias_stmt | @schemaindexsignature | @schemaattr_stmt | @type | @lambda_expr | @assign_stmt
+
+literals(unique int id : @literal,
+    int kind : int ref,
+    int parent : @literal_parent ref,
+    string value : string ref);
+
+case @literal.kind of
+0 = @boollit_type
+| 1 = @intlit_type
+| 2 = @floatlit_type
+| 3 = @stringlit_type;
+
+@basic_type = @bool_type | @int_type | @float_type | @str_type;
+
+@literal_parent = @literal_expr;
+
+@literal_expr = @numberlit_expr | @stringlit_expr | @nameconstantlit_expr;
+
+binaryops (unique int id : @binop,
+    int kind : int ref,
+    int parent : @binary_expr ref
+);
+
+case @binop.kind of
+  0 = @binop_add
+| 1 = @sub_binop
+| 2 = @mul_binop
+| 3 = @div_binop
+| 4 = @mod_binop
+| 5 = @pow_binop
+| 6 = @floordiv_binop
+| 7 = @lshift_binop
+| 8 = @rshift_binop
+| 9 = @bitxor_binop
+| 10 = @bitand_binop
+| 11 = @bitor_binop
+| 12 = @and_binop
+| 13 = @or_binop
+| 14 = @as_binop;
+
+unaryops(unique int id : @unaryop,
+    int kind: int ref,
+    unique int parent : @unary_expr ref);
+
+case @unaryop.kind of
+  0 = @uadd_unaryop
+| 1 = @usub_unaryop
+| 2 = @invert_unaryop
+| 3 = @not_unaryop;
+
+augops(unique int id : @augop,
+    int kind: int ref,
+    unique int parent : @augassign_stmt ref,
+    int symbol: string ref);
+
+case @augop.kind of
+//   0 = @assign_augop
+0 = @add_augop
+| 1 = @sub_augop
+| 2 = @mul_augop
+| 3 = @div_augop
+| 4 = @mod_augop
+| 5 = @pow_augop
+| 6 = @floordiv_augop
+| 7 = @lshift_augop
+| 8 = @rshift_augop
+| 9 = @bitxor_augop
+| 10 = @bitand_augop
+| 11 = @bitor_augop;
+
+cmpops(unique int id : @cmpop,
+    int kind: int ref,
+    int parent : @cmpop_list ref,
+    int idx : int ref);
+
+case @cmpop.kind of
+  0 = @eq_cmpop
+| 1 = @noteq_cmpop
+| 2 = @lt_cmpop
+| 3 = @lte_cmpop
+| 4 = @gt_cmpop
+| 5 = @gte_cmpop
+| 6 = @is_cmpop
+| 7 = @in_cmpop
+| 8 = @notin_cmpop
+| 9 = @not_cmpop
+| 10 = @isnot_cmpop;
+
+cmpop_lists(unique int id : @cmpop_list,
+    int parent : @compare_expr ref);
+
+keywords(unique int id:@keyword,
+    int parent : @keyword_parent ref,
+    int idx : int ref);
+
+keyword_lists(unique int id:@keyword_list,
+    int parent : @keyword_list_parent ref,
+    int idx:int ref);
+
+@keyword_list_parent = @call_expr | @schemaconfig | @schema_expr | @keyword_list ;
+@keyword_parent = @keyword_list;
+
+schemaconfig(unique int id: @schemaconfig,
+    int parent : @unification_stmt ref);
+
+configentrys(unique int id : @configentry,
+    int parent : @configentry_parent ref,
+    int idx : int ref);
+
+@configentry_parent = @dictcomp_expr | @config_expr | @configifentry_expr;
+
+configentry_operation(unique int id : @configentry_operation,
+    int kind :int ref,
+    string symbol : string ref,
+    int parent : @configentry ref);
+
+case @configentry_operation.kind of
+  0 = @union
+| 1 = @override
+| 2 = @insert;
+
+@numberlit_type = @intlit_type | @floatlit_type;
+
+numberbinarysuffixs(unique int id : @numberbinarysuffix,
+    // int kind : int ref,
+    string value: string ref,
+    int parent : @numberbinarysuffix_parent ref);
+
+@numberbinarysuffix_parent = @numberlit_expr | @numberlit_type;
+
+expr_contexts(unique int id : @exprcontext,
+    int kind: int ref,
+    unique int parent : @expr_context_parent ref);
+
+case @exprcontext.kind of
+0 = @load
+| 1 = @store;
+
+@expr_context_parent = @identifier_expr | @list_expr | @quant_expr | @selector_expr | @starred_expr | @subscript_expr;
+
+quantoperations(unique int id : @quantoperation,
+    int kind : int ref ,
+    int parent : @quant_expr ref);
+
+case @quantoperation.kind of
+  0 = @all
+| 1 = @any
+| 2 = @filter
+| 3 = @map;
+
+nameconstants(unique int id : @nameconstant,
+    int kind: int ref,
+    string value : string ref,
+    int parent : @nameconstantlit_expr ref);
+
+case @nameconstant.kind of
+  0 = @true
+| 1 = @false
+| 2 = @none
+| 3 = @undefined;
+
+compclause(unique int id : @compclause,
+    int parent : @compclause_parent ref);
+
+@compclause_parent = @dictcomp_expr | @listcomp_expr
+
+schemaindexsignature(unique int id :@schemaindexsignature,
+    int parent : @schema_stmt ref );
+
+// case @numberbinarysuffix.kind
+// | 0 = @n
+// | 1 = @u
+// | 2 = @m
+// | 3 = @k
+// | 4 = @K
+// | 5 = @M
+// | 6 = @G
+// | 7 = @T
+// | 8 = @P
+// | 9 = @Ki
+// | 10 = @Mi
+// | 11 = @Gi
+// | 12 = @Ti
+// | 13 = @Pi;
+
+/** 抽象 */
+
+//定义的schema及其对应的实例化
+schemas(int id : @schema_stmt ref,
+    int parent : @schema_expr ref);
+
+// functions(unique int id : @lambda_expr ref,
+//     int parent : @function_parent ref);
+
+// @function_parent = @dictcomp_expr | @listcomp_expr | @lambda_expr ;
+
+
+// parameter_lists(unique int id : @parameter_list,
+//   unique int parent : @parameter_list_parent ref);
+
+// @parameter_list_parent = @schema | @lambda;
+
+@string_part_parent = @joinedstring_expr | @formmattedvalue_expr;
+
+
+// comprehensions(unique int id : @comprehension,
+//     int parent : @comprehension_list ref,
+//     int idx : int ref);
+
+// comprehension_lists(
+//     unique int id : @comprehension_list,
+//     unique int parent : @ListComp ref);
+
+// @comprehension = @ListComp | @DictComp;
+
+// config_items(
+//     unique int id : @config_item,
+//     int kind: int ref,
+//     int parent : @config_item_list ref,
+//     int idx : int ref);
+
+// config_item_lists(unique int id : @config_item_list,
+//     unique int parent : @config_item_list_parent ref);
+
+// @config_item_list_parent = @KeyValuePair | @ConfigIfEntry | @Starred;
+
+
+imports(unique int id : @import,
+    int parent : @import_stmt ref ,
+    int idx : int ref,
+    string name : string ref);
+
+variable(unique int id : @variable,
+    int scope : @scope ref,
+    string name : string ref,
+    int parent : @identifier ref);
+
+variable_decl(int id : @variable ref,
+    int scope : @scope ref,
+    int parent : @ast_node ref);
+
+/** Errors */
+errors(unique int id :@error ,
+    int kind : int ref,
+    string tostring :string ref);
+
+case @error.kind of
+  0 = @unknownerror
+| 1 = @parseerror
+| 2 = @typeerror
+| 3 = @evaluationerror;
