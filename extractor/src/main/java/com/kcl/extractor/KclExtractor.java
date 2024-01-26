@@ -4,7 +4,7 @@ import com.kcl.api.Spec;
 import com.kcl.ast.Module;
 import com.kcl.ast.*;
 import com.kcl.parser.KclAstParser;
-import com.kcl.util.JsonUtil;
+import com.kcl.util.SematicUtil;
 import com.semmle.util.collections.CollectionUtil;
 import com.semmle.util.files.FileUtil;
 import com.semmle.util.trap.TrapWriter;
@@ -36,6 +36,8 @@ public class KclExtractor implements IExtractor {
 
     private Spec.LoadPackage_Result specResult;
 
+    private KclAstParser.ParseResult parseResult;
+
 //    private Program
 
     public KclExtractor(ExtractorConfig config, ExtractorState state) {
@@ -55,7 +57,8 @@ public class KclExtractor implements IExtractor {
         try {
             //parse file
             metrics.startPhase(ExtractionMetrics.ExtractionPhase.KclAstParser_parse);
-            this.specResult = KclAstParser.parse(Path.of(sourceFile));
+            this.parseResult = KclAstParser.parse(Path.of(sourceFile));
+            this.specResult = this.parseResult.getSpec();
             Path jsonPath = Path.of(System.getProperty("user.dir")).resolve("data/report/extend/kcl.json");
             FileUtil.write(jsonPath.toFile(), specResult.getProgram());
             metrics.stopPhase(ExtractionMetrics.ExtractionPhase.KclAstParser_parse);
@@ -63,7 +66,7 @@ public class KclExtractor implements IExtractor {
             //extract
             metrics.startPhase(ExtractionMetrics.ExtractionPhase.KclExtractor_extract);
             this.lexicalExtractor = new LexicalExtractor(textualExtractor);
-            Program program = JsonUtil.deserializeProgram(specResult.getProgram());
+            Program program = this.parseResult.getProgram();
             visit(program);
             ParseResultInfo loc = lexicalExtractor.extractLines(source, locationManager.getFileLabel());
             metrics.stopPhase(ExtractionMetrics.ExtractionPhase.KclExtractor_extract);
@@ -139,7 +142,7 @@ public class KclExtractor implements IExtractor {
         }
 
         Label lbl = this.trapWriter.globalID(node.getId());
-//        c.pushLableInfo(lbl, node.getId());
+        c.pushLableInfo(lbl, node.getId());
 
         Context newContext = new Context(c.current, lbl, c.childIndex);
         newContext.pushLableInfo(lbl, node.getId());
@@ -273,7 +276,6 @@ public class KclExtractor implements IExtractor {
 
     public Label visit(IdentifierExpr identifierExpr, Context c) {
         Label label = trapWriter.freshLabel();
-
         this.trapWriter.addTuple("identifiers", label, c.current, c.childIndex, identifierExpr.getName());
 
         //String
@@ -397,7 +399,24 @@ public class KclExtractor implements IExtractor {
 
 
     public void visit(Identifier identifier, Context c) {
-        this.trapWriter.addTuple("identifiers", c.current, c.current, c.childIndex, identifier.getName());
+        this.trapWriter.addTuple("identifiers", c.current, c.parent, c.childIndex, identifier.getName());
+        try {
+            String astID = c.getNodeId(c.current);
+            Spec.Symbol identSymbol = SematicUtil.findSymbolByAstId(this.specResult, astID);
+            if (identSymbol != null && identSymbol.hasTy()) {
+                String schemaFullName = identSymbol.getTy().getPkgPath() + "." + identSymbol.getTy().getSchemaName();
+                Spec.Symbol appConfigSymbol = SematicUtil.findSymbol(specResult,
+                        specResult.getFullyQualifiedNameMapOrDefault(schemaFullName, null));
+                String nameId = SematicUtil.findNodeBySymbol(this.specResult, appConfigSymbol.getDef());
+                String schemaId = this.parseResult.getSchemaMap().get(nameId);
+                Node<?> schemaNode = this.parseResult.getNodeMap().get(schemaId);
+                this.trapWriter.addTuple("schemas", c.current, this.trapWriter.globalID(schemaNode.getId()));
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         //String
         this.visit(identifier.getPkgpath(), new Context(c.current, trapWriter.freshLabel(), 1));
