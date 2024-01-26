@@ -198,7 +198,7 @@ case @expr.kind of
 | 27 = @configifentry_expr
 | 28 = @missing_expr;
 
-@expr_parent = @expr | @stmt | @expr_list;
+@expr_parent = @ast_node | @expr_list;
 
 /** Strings */
 
@@ -228,7 +228,7 @@ identifier_lists(unique int id : @identifier_list,
 
 @identifier_list_parent = @assign_stmt | @quant_expr | @rule_stmt | @schema_stmt | @arguments | @compclause;
 
-@identifier_parent = @schemaconfig | @augassign_stmt | @keyword | @rule_stmt | @schema_expr|@schema_stmt|@selector_expr|@typealias_stmt|@unification_stmt;
+@identifier_parent = @schemaconfig | @augassign_stmt | @keyword | @rule_stmt | @schema_expr |@schema_stmt |@selector_expr|@typealias_stmt|@unification_stmt | @identifier_expr;
 
 /** arguments */
 arguments(unique int id : @arguments,
@@ -458,8 +458,8 @@ schemaindexsignature(unique int id :@schemaindexsignature,
 /** 抽象 */
 
 //定义的schema及其对应的实例化
-schemas(int id : @schema_stmt ref,
-    int parent : @schema_expr ref);
+schemas(int id : @identifier ref,
+    int parent : @schema_stmt ref);
 
 // functions(unique int id : @lambda_expr ref,
 //     int parent : @function_parent ref);
