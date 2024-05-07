@@ -1,21 +1,20 @@
 # CodeQL KCL
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkcl-lang%2Fcodeql-kcl.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkcl-lang%2Fcodeql-kcl?ref=badge_shield)
 
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkcl-lang%2Fcodeql-kcl.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkcl-lang%2Fcodeql-kcl?ref=badge_shield)
 
 The repository contains the standard CodeQL libraries and queries that power KCL code security.
 
 ## Developing
 
 + Install [CodeQL CLI](https://docs.github.com/en/code-security/codeql-cli/getting-started-with-the-codeql-cli/setting-up-the-codeql-cli)
-+ Install [Kcl Java Lib](https://github.com/kcl-lang/lib/tree/main/java)
 
 ## Extractor
 
-### Build
+### Building
 
-1. Run make in the lib/java directory of KCL lib, and place the generated libkcl_lib_jni.dylib file into your project.
-2. Import the codeql.jar, located at codeql/tools/codeql.jar.
-3. Put your kcl code into data/project.
+1. See [here](https://github.com/kcl-lang/lib?tab=readme-ov-file#java) to add the `kcl-lib` dependency. 
+2. Import the `codeql.jar`, located at codeql/tools/codeql.jar.
+3. Put your KCL code into data/project.
 
 ### Output
 
@@ -23,4 +22,5 @@ The repository contains the standard CodeQL libraries and queries that power KCL
 + data/database: The generated database.
 
 ## License
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkcl-lang%2Fcodeql-kcl.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkcl-lang%2Fcodeql-kcl?ref=badge_large)

@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.example</groupId>
-    <artifactId>kclExtractor</artifactId>
+    <artifactId>codeql-kcl-extractor</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -13,13 +13,15 @@
         <maven.compiler.target>20</maven.compiler.target>
         <jUnitVersion>5.10.0</jUnitVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <palantir-java-format.version>2.36.0</palantir-java-format.version>
+        <spotless.version>2.39.0</spotless.version>
+        <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.kcl</groupId>
-            <artifactId>kcl-java-lib</artifactId>
-            <version>0.1.0</version>
+            <artifactId>kcl-lib</artifactId>
+            <version>0.8.6</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -107,6 +109,21 @@
         </pluginManagement>
         <plugins>
             <plugin>
+                <groupId>net.revelc.code.formatter</groupId>
+                <artifactId>formatter-maven-plugin</artifactId>
+                <version>2.16.0</version>
+                <configuration>
+                    <!-- specify your configuration here -->
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
@@ -124,5 +141,13 @@
             </plugin>
         </plugins>
     </build>
-
+    <repositories>
+    <repository>
+        <id>github</id>
+        <url>https://maven.pkg.github.com/kcl-lang/*</url>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository>
+    </repositories>
 </project>
